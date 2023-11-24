@@ -85,17 +85,18 @@ public:
   bool getMe();
 
   bool sendSimpleMessage(const String& chat_id, const String& text, const String& parse_mode);
-  bool sendMessage(const String& chat_id, const String& text, const String& parse_mode = "", int message_id = 0);
+  bool sendMessage(const String& chat_id, const String& text, const String& parse_mode = "");
+  bool sendReplyMessage(const String& chat_id, const String& text, int reply_to_message_id, const String& parse_mode = "");
   bool sendMessageWithReplyKeyboard(const String& chat_id, const String& text,
                                     const String& parse_mode, const String& keyboard,
                                     bool resize = false, bool oneTime = false,
                                     bool selective = false);
   bool sendMessageWithInlineKeyboard(const String& chat_id, const String& text,
-                                     const String& parse_mode, const String& keyboard, int message_id = 0);
+                                     const String& parse_mode, const String& keyboard);
 
   bool sendChatAction(const String& chat_id, const String& text);
 
-  bool sendPostMessage(JsonObject payload, bool edit = false); 
+  bool sendPostMessage(JsonObject payload); 
   String sendPostPhoto(JsonObject payload);
   String sendPhotoByBinary(const String& chat_id, const String& contentType, int fileSize,
                            MoreDataAvailable moreDataAvailableCallback,
