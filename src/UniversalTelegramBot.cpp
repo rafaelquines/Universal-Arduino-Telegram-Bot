@@ -559,20 +559,32 @@ bool UniversalTelegramBot::sendSimpleMessage(const String& chat_id, const String
   return sent;
 }
 
+bool UniversalTelegramBot::sendReplyMessage(const String& chat_id, const String& text,
+                                       int reply_to_message_id, const String& parse_mode) {
+  DynamicJsonDocument payload(maxMessageLength);
+  payload["chat_id"] = chat_id;
+  payload["text"] = text;
+
+   if (reply_to_message_id != 0)
+    payload["reply_to_message_id"] = reply_to_message_id;
+
+  if (parse_mode != "")
+    payload["parse_mode"] = parse_mode;
+
+  return sendPostMessage(payload.as<JsonObject>()); // if message id == 0 then edit is false, else edit is true
+}
+
 bool UniversalTelegramBot::sendMessage(const String& chat_id, const String& text,
-                                       const String& parse_mode, int message_id) { // added message_id
+                                       const String& parse_mode) { // added message_id
 
   DynamicJsonDocument payload(maxMessageLength);
   payload["chat_id"] = chat_id;
   payload["text"] = text;
 
-  if (message_id != 0)
-    payload["message_id"] = message_id; // added message_id
-
   if (parse_mode != "")
     payload["parse_mode"] = parse_mode;
 
-  return sendPostMessage(payload.as<JsonObject>(), message_id); // if message id == 0 then edit is false, else edit is true
+  return sendPostMessage(payload.as<JsonObject>()); // if message id == 0 then edit is false, else edit is true
 }
 
 bool UniversalTelegramBot::sendMessageWithReplyKeyboard(
@@ -607,29 +619,25 @@ bool UniversalTelegramBot::sendMessageWithReplyKeyboard(
 bool UniversalTelegramBot::sendMessageWithInlineKeyboard(const String& chat_id,
                                                          const String& text,
                                                          const String& parse_mode,
-                                                         const String& keyboard,
-                                                         int message_id) {   // added message_id
+                                                         const String& keyboard) {
 
   DynamicJsonDocument payload(maxMessageLength);
   payload["chat_id"] = chat_id;
   payload["text"] = text;
 
-  if (message_id != 0)
-    payload["message_id"] = message_id; // added message_id
-    
   if (parse_mode != "")
     payload["parse_mode"] = parse_mode;
 
   JsonObject replyMarkup = payload.createNestedObject("reply_markup");
   replyMarkup["inline_keyboard"] = serialized(keyboard);
-  return sendPostMessage(payload.as<JsonObject>(), message_id); // if message id == 0 then edit is false, else edit is true
+  return sendPostMessage(payload.as<JsonObject>()); // if message id == 0 then edit is false, else edit is true
 }
 
 /***********************************************************************
  * SendPostMessage - function to send message to telegram              *
  * (Arguments to pass: chat_id, text to transmit and markup(optional)) *
  ***********************************************************************/
-bool UniversalTelegramBot::sendPostMessage(JsonObject payload, bool edit) { // added message_id
+bool UniversalTelegramBot::sendPostMessage(JsonObject payload) { // added message_id
 
   bool sent = false;
   #ifdef TELEGRAM_DEBUG 
@@ -641,7 +649,7 @@ bool UniversalTelegramBot::sendPostMessage(JsonObject payload, bool edit) { // a
 
   if (payload.containsKey("text")) {
     while (millis() < sttime + 8000) { // loop for a while to send the message
-        String response = sendPostToTelegram((edit ? BOT_CMD("editMessageText") : BOT_CMD("sendMessage")), payload); // if edit is true we send a editMessageText CMD
+        String response = sendPostToTelegram((BOT_CMD("sendMessage")), payload);
          #ifdef TELEGRAM_DEBUG  
         Serial.println(response);
       #endif
